@@ -23,7 +23,7 @@ function updateMobileStatus() {
                 const mobileStatusElement = document.getElementById('mobile-status-text');
                 const mobileAppsElement = document.getElementById('mobile-apps');
 
-                const mobileStatusText = data.info.mobile_status === '0' ? '活着' : '寄了';
+                const mobileStatusText = data.info.status === '0' ? '活着' : '寄了';
                 mobileStatusElement.textContent = mobileStatusText;
 
                 mobileAppsElement.textContent = data.info.app_name.join(', ');

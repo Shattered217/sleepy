@@ -16,8 +16,8 @@ def get_desktop():
             output_set.add(title)
 
 def seed():
-    url = "http://127.0.0.1:5000/pc_status"
-    secret = "123456"
+    url = "https://onlsy.shattered.top/pc_status"
+    secret = "ilovesy"
     pc_status = "0"
 
     get_desktop()  # 获取当前进程

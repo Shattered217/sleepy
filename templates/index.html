@@ -9,21 +9,17 @@
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
 
-<!-- url_for('static', filename='') -->
-
 <body>
     <div class="card">
-        <a style="font-size: 2em;"><ruby>似<rt>sǐ</rt></ruby>了吗?</a>
-
+        <a style="font-size: 2em;">{{ user }}<ruby>似<rt>sǐ</rt></ruby>了吗?</a>
         <div style="height: 20px;"></div>
-
-        <a>{{ user }}'s Status:<br><a id="status" style="font-size: 1.2em;">{{ status_name }}</a></a>
+        <a>PC 状态: <a id="pc-status-text" style="font-size: 1.2em;"></a></a>
         <br>
-        <a id="additional-info" style="font-size: 1em;">{{ status_desc | safe }}</a>
-
+        <a id="pc-apps" style="font-size: 1em;"></a>
         <div style="height: 10px;"></div>
-        {{ more_text | safe }}
-        <!-- <a>ps: 如果长时间无响应，可能是你的网络问题，或服务器无法响应等</a> -->
+        <a>手机状态: <a id="mobile-status-text" style="font-size: 1.2em;"></a></a>
+        <br>
+        <a id="mobile-apps" style="font-size: 1em;"></a>
         <div style="height: 40px;"></div>
         <a>你可以通过这个页面视奸 {{ user }}。
             <br>
@@ -37,11 +33,6 @@
             </a>
         </a>
     </div>
-    <!-- <script src="assets/query.js"></script> -->
-    <script>
-        const statusElement = document.getElementById('status');
-        statusElement.classList.add('{{ status_color }}');
-    </script>
     <script src="{{ url_for('static', filename='get.js') }}" defer></script>
 </body>
 

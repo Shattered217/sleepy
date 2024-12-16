@@ -2,7 +2,7 @@
 # coding: utf-8
 import utils as u
 from data import data as data_init
-from flask import Flask, render_template, request, url_for, redirect, flash, make_response
+from flask import Flask, render_template, request, url_for, redirect, flash, make_response, jsonify
 from markupsafe import escape
 import json
 
@@ -97,34 +97,92 @@ def get_status_list():
     return u.format_dict(stlst)
 
 
-@app.route('/set')
-def set_normal():
-    showip(request, '/set')
+@app.route('/status', methods=['GET'])
+def status():
+    showip(request, '/status')
+
+    # 获取参数
+    secret = request.args.get("secret")
     status = escape(request.args.get("status"))
-    try:
-        status = int(status)
-    except:
-        return reterr(
-            code='bad request',
-            message="argument 'status' must be a number"
-        )
-    secret = escape(request.args.get("secret"))
-    u.info(f'status: {status}, secret: "{secret}"')
-    secret_real = d.dget('secret')
-    if secret == secret_real:
-        d.dset('status', status)
+    app_name = request.args.getlist("app_name")
+
+    # 验证secret（如果存在）
+    if secret:
+        secret_real = d.dget('secret')
+        if secret != secret_real:
+            return jsonify({
+                'success': False,
+                'code': 'not authorized',
+                'message': 'invalid secret'
+            }), 403
+
+        # 更新状态
+        if status is not None:
+            d.dset('status', status)
+
+        if app_name:
+            d.dset('app_name', app_name)
+
+        u.info(f'Set status:{status}, app_name: {app_name}, secret: "{secret}"')
         u.info('set success')
-        ret = {
-            'success': True,
-            'code': 'OK',
-            'set_to': status
+
+    # 获取当前的状态和应用名称列表
+    current_status = d.dget('status')
+    current_app_name = d.dget('app_name') or []
+
+    ret = {
+        'success': True,
+        'info': {
+            'status': current_status,
+            'app_name': current_app_name,
         }
-        return u.format_dict(ret)
-    else:
-        return reterr(
-            code='not authorized',
-            message='invaild secret'
-        )
+    }
+
+    return jsonify(ret)
+
+@app.route('/pc_status', methods=['GET'])
+def pc_status():
+    showip(request, '/pc_status')
+
+    # 获取参数
+    secret = request.args.get("secret")
+    pc_status = escape(request.args.get("pc_status"))
+    pc_app_name = request.args.getlist("pc_app_name")
+
+    # 验证secret（如果存在）
+    if secret:
+        secret_real = d.dget('secret')
+        if secret != secret_real:
+            return jsonify({
+                'success': False,
+                'code': 'not authorized',
+                'message': 'invalid secret'
+            }), 403
+
+        # 更新状态
+        if pc_status is not None:
+            d.dset('pc_status', pc_status)
+
+        if pc_app_name:
+            d.dset('pc_app_name', pc_app_name)
+
+        u.info(f'Set pc_status:{pc_status}, pc_app_name: {pc_app_name}, secret: "{secret}"')
+        u.info('set success')
+
+    # 获取当前的状态和应用名称列表
+    current_pc_status = d.dget('pc_status')
+    current_pc_app_name = d.dget('pc_app_name') or []
+
+    ret = {
+        'success': True,
+        'info': {
+            'pc_status': current_pc_status,
+            'pcapp_name': current_pc_app_name,
+        }
+    }
+
+    return jsonify(ret)
+
 
 
 @app.route('/set/<secret>/<int:status>')

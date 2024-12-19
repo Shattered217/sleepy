@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 # coding: utf-8
+import time
 import utils as u
 from data import data as data_init
 from flask import Flask, render_template, request, url_for, redirect, flash, make_response, jsonify
@@ -9,7 +10,28 @@ import json
 d = data_init()
 app = Flask(__name__)
 
-# ---
+time_get = time.time()
+pc_time_get = time.time()
+status = d.dget('status')
+pc_status = d.dget('pc_status')
+app_name = d.dget('app_name')
+pc_app_name = d.dget('pc_app_name')
+
+def check_timeout():
+    global time_get, pc_time_get, status, pc_status
+    now_time = time.time()
+    if now_time - time_get > 60 and status != 1:
+        status = 1
+        d.dset('status', status)
+        d.dset('app_name', [])
+        u.info(f'status changed to: {status} due to timeout')
+    if now_time - pc_time_get > 60 and pc_status != 1:
+        pc_status = 1
+        d.dset('pc_status', pc_status)
+        d.dset('pc_app_name', [])
+        u.info(f'PC status changed to: {pc_status} due to timeout')
+
+
 
 
 def reterr(code, message):
@@ -102,9 +124,12 @@ def status():
     showip(request, '/status')
 
     # 获取参数
+    global time_get
     secret = request.args.get("secret")
     status = escape(request.args.get("status"))
     app_name = request.args.getlist("app_name")
+
+    check_timeout()
 
     # 验证secret（如果存在）
     if secret:
@@ -126,9 +151,13 @@ def status():
         u.info(f'Set status:{status}, app_name: {app_name}, secret: "{secret}"')
         u.info('set success')
 
+        time_get = time.time()
+
     # 获取当前的状态和应用名称列表
     current_status = d.dget('status')
     current_app_name = d.dget('app_name') or []
+
+    time_get = time.time()
 
     ret = {
         'success': True,
@@ -145,9 +174,12 @@ def pc_status():
     showip(request, '/pc_status')
 
     # 获取参数
+    global pc_time_get
     secret = request.args.get("secret")
     pc_status = escape(request.args.get("pc_status"))
     pc_app_name = request.args.getlist("pc_app_name")
+
+    check_timeout()
 
     # 验证secret（如果存在）
     if secret:
@@ -163,11 +195,13 @@ def pc_status():
         if pc_status is not None:
             d.dset('pc_status', pc_status)
 
-        if pc_app_name:
+        if pc_app_name :
             d.dset('pc_app_name', pc_app_name)
 
         u.info(f'Set pc_status:{pc_status}, pc_app_name: {pc_app_name}, secret: "{secret}"')
         u.info('set success')
+
+        pc_time_get = time.time()
 
     # 获取当前的状态和应用名称列表
     current_pc_status = d.dget('pc_status')

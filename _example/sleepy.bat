@@ -1,0 +1,1 @@
+D:\Python312\python.exe E:\sleepy\PC_status.py

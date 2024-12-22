@@ -6,8 +6,8 @@
     "任务切换程序",
     "Shattered?的Redmi K60 Pro",
 ]
-服务器地址 = "https://onlsy.shattered.top/pc_status"
-secret = "ilovesy"
+服务器地址 = "http://127.0.0.1/pc_status"
+secret = "123456"
 
 import requests
 import time

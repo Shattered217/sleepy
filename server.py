@@ -5,6 +5,7 @@ import utils as u
 from data import data as data_init
 from flask import Flask, render_template, request, url_for, redirect, flash, make_response, jsonify
 from markupsafe import escape
+import threading
 import json
 
 d = data_init()
@@ -12,13 +13,13 @@ app = Flask(__name__)
 
 time_get = time.time()
 pc_time_get = time.time()
-status = d.dget('status')
-pc_status = d.dget('pc_status')
+status = 1
+pc_status = 1
 app_name = d.dget('app_name')
 pc_app_name = d.dget('pc_app_name')
 
 def check_timeout():
-    global time_get, pc_time_get, status, pc_status
+    global time_get, pc_time_get, status , pc_status
     now_time = time.time()
     if now_time - time_get > 60 and status != 1:
         status = 1
@@ -30,6 +31,10 @@ def check_timeout():
         d.dset('pc_status', pc_status)
         d.dset('pc_app_name', [])
         u.info(f'PC status changed to: {pc_status} due to timeout')
+
+    timer = threading.Timer(60, check_timeout)
+    timer.daemon = True
+    timer.start()
 
 
 
@@ -129,8 +134,6 @@ def status():
     status = escape(request.args.get("status"))
     app_name = request.args.getlist("app_name")
 
-    check_timeout()
-
     # 验证secret（如果存在）
     if secret:
         secret_real = d.dget('secret')
@@ -178,8 +181,6 @@ def pc_status():
     secret = request.args.get("secret")
     pc_status = escape(request.args.get("pc_status"))
     pc_app_name = request.args.getlist("pc_app_name")
-
-    check_timeout()
 
     # 验证secret（如果存在）
     if secret:
@@ -239,6 +240,11 @@ def set_path(secret, status):
             code='not authorized',
             message='invaild secret'
         )
+
+
+timer = threading.Timer(60, check_timeout)
+timer.daemon = True
+timer.start()
 
 
 if __name__ == '__main__':
